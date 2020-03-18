@@ -4,107 +4,80 @@ date: 2020-03-18T14:37:18+06:00
 draft: false
 ---
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>My Google Map</title>
-  <style>
-    #map{
-      height:400px;
-      width:100%;
-    }
-  </style>
-</head>
-<body>
-  <h1>My Google Map</h1>
-  <div id="map"></div>
-  <script>
-    function initMap(){
-      // Map options
-      var options = {
-        zoom:8,
-        center:{lat:23.8103,lng:90.4125}
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Circles</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height:400px;
+      	width:100%;
       }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+  	<h3> Population comparison </h3>
+    <div id="map"></div>
+    <script>
+      // This example creates circles on the map, representing populations in North
+      // America.
 
-      // New map
-      var map = new google.maps.Map(document.getElementById('map'), options);
-
-      // Listen for click on map
-      google.maps.event.addListener(map, 'click', function(event){
-        // Add marker
-        addMarker({coords:event.latLng});
-      });
-
-      /*
-      // Add marker
-      var marker = new google.maps.Marker({
-        position:{lat:42.4668,lng:-70.9495},
-        map:map,
-        icon:'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'
-      });
-
-      var infoWindow = new google.maps.InfoWindow({
-        content:'<h1>Lynn MA</h1>'
-      });
-
-      marker.addListener('click', function(){
-        infoWindow.open(map, marker);
-      });
-      */
-
-      // Array of markers
-      var markers = [
-        {
-          coords:{lat:23.8103,lng:90.4125},
-          iconImage:'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png',
-          content:'<h1>Lynn MA</h1>'
+      // First, create an object containing LatLng and population for each city.
+      var citymap = {
+        dhaka: {
+          center: {lat: 23.8103, lng: 90.4125},
+          population: 9000000
         },
-        {
-          coords:{lat:23.8103,lng:90.4125},
-          content:'<h1>Amesbury MA</h1>'
+        rangpur: {
+          center: {lat: 25.7468, lng: 89.2508},
+          population: 2542441
         },
-        {
-          coords:{lat:23.8103,lng:90.4125},
+        chittagong: {
+          center: {lat: 22.3569, lng: 91.7832},
+          population: 4009423
+        },
+        khulna: {
+          center: {lat: 22.8456, lng: 89.5403},
+          population: 664728
         }
-      ];
+      };
 
-      // Loop through markers
-      for(var i = 0;i < markers.length;i++){
-        // Add marker
-        addMarker(markers[i]);
-      }
-
-      // Add Marker Function
-      function addMarker(props){
-        var marker = new google.maps.Marker({
-          position:props.coords,
-          map:map,
-          //icon:props.iconImage
+      function initMap() {
+        // Create the map.
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 6,
+          center: {lat: 23.6850, lng: 90.3563},
+          mapTypeId: 'terrain'
         });
 
-        // Check for customicon
-        if(props.iconImage){
-          // Set icon image
-          marker.setIcon(props.iconImage);
-        }
-
-        // Check content
-        if(props.content){
-          var infoWindow = new google.maps.InfoWindow({
-            content:props.content
-          });
-
-          marker.addListener('click', function(){
-            infoWindow.open(map, marker);
+        // Construct the circle for each value in citymap.
+        // Note: We scale the area of the circle based on the population.
+        for (var city in citymap) {
+          // Add the circle for this city to the map.
+          var cityCircle = new google.maps.Circle({
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.35,
+            map: map,
+            center: citymap[city].center,
+            radius: Math.sqrt(citymap[city].population) * 35
           });
         }
       }
-    }
-  </script>
-  <script async defer
+    </script>
+    <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBo6ODUQwXHXFJJsOGxBu9A094RFNMMcmI&callback=initMap">
     </script>
-</body>
+  </body>
 </html>
