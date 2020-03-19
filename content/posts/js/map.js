@@ -1,3 +1,9 @@
+---
+title: "Map"
+date: 2020-03-19T18:12:18+06:00
+draft: true
+---
+
 mapboxgl.accessToken =
   'pk.eyJ1IjoiYnRyYXZlcnN5IiwiYSI6ImNqenY5MThjMDBqZ3YzY3A0N3ppZTA5Y2QifQ.LrFjedgw1wG34TkWCpNtFg';
 const map = new mapboxgl.Map({
