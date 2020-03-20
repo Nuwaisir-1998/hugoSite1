@@ -172,3 +172,555 @@ function loadMap(stores) {
      </script>
 </body>
 </html> -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Create a heatmap layer</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
+
+
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
+
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.99.0/css/materialize.css">
+
+    <style>
+        body {
+            background-color:dimgray;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* #map { position: absolute; top: 0; bottom: 0; width: 100%; } */
+
+        .container {
+            width: 80%;
+            height: 50px;
+        }
+
+        .container .first {
+            float: left;
+            width: 50%;
+        }
+
+        .container .second {
+            float: right;
+            width: 40%;
+        }
+
+        #map {
+            float: right;
+            width: 70%;
+            margin: auto;
+            height: 500px;
+            border-radius: 5px;
+        }
+
+        .container_city {
+            width: 9%;
+            height: 50px;
+            margin-left: 5px;
+            margin-top: 50px;
+        }
+
+        .myTable {
+            float: right;
+            width: 20%;
+            height: 50px;
+            margin-left: 5px;
+            margin-top: 50px;
+            border-radius: 5px;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            border: black;
+        }
+
+        tr{
+            background-color: greenyellow;
+            color: white;
+            border: black;
+        }
+
+        td{
+            background-color: greenyellow;
+            color: white;
+            border: black;
+        }
+
+        #filterInput{
+            background-color: firebrick;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NEW -->
+    <h1 class="display-4 text-center"><i class="fas fa-map-marked mr-4"></i>Dashboard</h1>
+    <div class="container_city">
+
+        <input type="text" id="filterInput" placeholder="Search names...">
+        <ul id="names" class="collection with-header">
+            <li class="collection-header">
+                <h5>A</h5>
+            </li>
+            <li class="collection-item">
+                <a href="#">Alaska</a>
+            </li>
+            <li class="collection-item">
+                <a href="#">Arambagh</a>
+            </li>
+            <li class="collection-item">
+                <a href="#">Aligar</a>
+            </li>
+            <li class="collection-item">
+                <a href="#">Arizona</a>
+            </li>
+            <li class="collection-header">
+                <h5>B</h5>
+            </li>
+            <li class="collection-item">
+                <a href="#">Boston</a>
+            </li>
+            <li class="collection-item">
+                <a href="#">Baridhara</a>
+            </li>
+            <li class="collection-item">
+                <a href="#">Brahmanbaria</a>
+            </li>
+            <li class="collection-item">
+                <a href="#">Barisal</a>
+            </li>
+            <li class="collection-header">
+                <h5>D</h5>
+            </li>
+            <li class="collection-item">
+                <a href="#">Dhaka</a>
+            </li>
+            <li class="collection-item">
+                <a href="#">Damascus</a>
+            </li>
+            <li class="collection-item">
+                <a href="#">Darjeeling</a>
+            </li>
+        </ul>
+
+
+    </div>
+
+    <!-- /NEW -->
+
+    <div class="myTable">
+        <table>
+            <tr>
+                <th>Infected</th>
+                <th>Country</th>
+            </tr>
+            <tr>
+                <td>81000</td>
+                <td>C1</td>
+            </tr>
+            <tr>
+                <td>40000</td>
+                <td>C2</td>
+            </tr>
+            <tr>
+                <td>21000</td>
+                <td>C3</td>
+            </tr>
+            <tr>
+                <td>10000</td>
+                <td>C4</td>
+            </tr>
+            <tr>
+                <td>5000</td>
+                <td>C5</td>
+            </tr>
+            <tr>
+                <td>2000</td>
+                <td>C6</td>
+            </tr>
+            <tr>
+                <td>1000</td>
+                <td>C7</td>
+            </tr>
+            
+        </table>
+    </div>
+
+
+    <div id="map"></div>
+
+
+    <div class="container">
+        <div class="first">
+            <canvas id="myChart1"></canvas>
+        </div>
+
+        <div class="second">
+            <canvas id="myChart2"></canvas>
+        </div>
+    </div>
+
+    
+
+
+
+    <script>
+        // NEW
+
+        // Get input element
+        let filterInput = document.getElementById('filterInput');
+        // Add event listener
+        filterInput.addEventListener('keyup', filterNames);
+
+        function filterNames() {
+            // Get value of input
+            let filterValue = document.getElementById('filterInput').value.toUpperCase();
+
+            // Get names ul
+            let ul = document.getElementById('names');
+            // Get lis from ul
+            let li = ul.querySelectorAll('li.collection-item');
+
+            // Loop through collection-item lis
+            for (let i = 0; i < li.length; i++) {
+                let a = li[i].getElementsByTagName('a')[0];
+                // If matched
+                if (a.innerHTML.toUpperCase().indexOf(filterValue) > -1) {
+                    li[i].style.display = '';
+                } else {
+                    li[i].style.display = 'none';
+                }
+            }
+
+        }
+
+        // /NEW
+
+
+
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoibnV3YWlzaXIiLCJhIjoiY2s3eW5leHRmMDBmajNrbTB4bnViNnNpciJ9.PQs4dqbDywb75CpYpjtPeg';
+
+
+
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v10',
+            // center: [-120, 50],
+            // zoom: 2
+            center: [90.4125, 23.8103],
+            zoom: 2
+        });
+
+        map.on('load', function () {
+            // Add a geojson point source.
+            // Heatmap layers also work with a vector tile source.
+            map.addSource('earthquakes', {
+                'type': 'geojson',
+                'data':
+                    'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson'
+            });
+
+            map.addLayer(
+                {
+                    'id': 'earthquakes-heat',
+                    'type': 'heatmap',
+                    'source': 'earthquakes',
+                    'maxzoom': 9,
+                    'paint': {
+                        // Increase the heatmap weight based on frequency and property magnitude
+                        'heatmap-weight': [
+                            'interpolate',
+                            ['linear'],
+                            ['get', 'mag'],
+                            0,
+                            0,
+                            6,
+                            1
+                        ],
+                        // Increase the heatmap color weight weight by zoom level
+                        // heatmap-intensity is a multiplier on top of heatmap-weight
+                        'heatmap-intensity': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            0,
+                            1,
+                            9,
+                            3
+                        ],
+                        // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+                        // Begin color ramp at 0-stop with a 0-transparancy color
+                        // to create a blur-like effect.
+                        'heatmap-color': [
+                            'interpolate',
+                            ['linear'],
+                            ['heatmap-density'],
+                            0,
+                            'rgba(33,102,172,0)',
+                            0.2,
+                            'rgb(103,169,207)',
+                            0.4,
+                            'rgb(209,229,240)',
+                            0.6,
+                            'rgb(253,219,199)',
+                            0.8,
+                            'rgb(239,138,98)',
+                            1,
+                            'rgb(178,24,43)'
+                        ],
+                        // Adjust the heatmap radius by zoom level
+                        'heatmap-radius': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            0,
+                            2,
+                            9,
+                            20
+                        ],
+                        // Transition from heatmap to circle layer by zoom level
+                        'heatmap-opacity': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            7,
+                            1,
+                            9,
+                            0
+                        ]
+                    }
+                },
+                'waterway-label'
+            );
+
+            map.addLayer(
+                {
+                    'id': 'earthquakes-point',
+                    'type': 'circle',
+                    'source': 'earthquakes',
+                    'minzoom': 7,
+                    'paint': {
+                        // Size circle radius by earthquake magnitude and zoom level
+                        'circle-radius': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            7,
+                            ['interpolate', ['linear'], ['get', 'mag'], 1, 1, 6, 4],
+                            16,
+                            ['interpolate', ['linear'], ['get', 'mag'], 1, 5, 6, 50]
+                        ],
+                        // Color circle by earthquake magnitude
+                        'circle-color': [
+                            'interpolate',
+                            ['linear'],
+                            ['get', 'mag'],
+                            1,
+                            'rgba(33,102,172,0)',
+                            2,
+                            'rgb(103,169,207)',
+                            3,
+                            'rgb(209,229,240)',
+                            4,
+                            'rgb(253,219,199)',
+                            5,
+                            'rgb(239,138,98)',
+                            6,
+                            'rgb(178,24,43)'
+                        ],
+                        'circle-stroke-color': 'white',
+                        'circle-stroke-width': 1,
+                        // Transition from heatmap to circle layer by zoom level
+                        'circle-opacity': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            7,
+                            0,
+                            8,
+                            1
+                        ]
+                    }
+                },
+                'waterway-label'
+            );
+
+
+        });
+
+
+
+        let myChart1 = document.getElementById('myChart1').getContext('2d');
+
+        // Global Options
+        Chart.defaults.global.defaultFontFamily = 'Lato';
+        Chart.defaults.global.defaultFontSize = 10;
+        Chart.defaults.global.defaultFontColor = 'white';
+
+        let massPopChart1 = new Chart(myChart1, {
+            type: 'line', // bar, horizontalBar, pie, line, doughnut, radar, polarArea
+            data: {
+                labels: ['Jan', 'Feb', 'March', 'April', 'May', 'June'],
+                datasets: [{
+                    label: 'Infected',
+                    data: [
+                        64,
+                        128,
+                        256,
+                        512,
+                        1024,
+                        2048
+                    ],
+                    //backgroundColor:'green',
+                    backgroundColor: [
+                        'rgba(255, 206, 31, 0.0)'
+                    ],
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 206, 31, 1)',
+                    hoverBorderWidth: 3,
+                    hoverBorderColor: '#000'
+                },
+
+                {
+                    label: 'Death',
+                    data: [
+                        6,
+                        10,
+                        20,
+                        52,
+                        70,
+                        100
+                    ],
+                    //backgroundColor:'green',
+                    backgroundColor: [
+                        'rgba(0, 255, 55, 0.0)'
+                    ],
+                    borderWidth: 1,
+                    borderColor: 'rgba(0, 255, 55, 1)',
+                    hoverBorderWidth: 3,
+                    hoverBorderColor: '#000'
+                },
+
+                {
+                    label: 'Cured',
+                    data: [
+                        50,
+                        70,
+                        60,
+                        100,
+                        200,
+                        250
+                    ],
+                    //backgroundColor:'green',
+                    backgroundColor: [
+                        'rgba(255, 5, 5, 0.0)'
+                    ],
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 5, 5, 1)',
+                    hoverBorderWidth: 3,
+                    hoverBorderColor: '#000'
+                }
+
+                ]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: 'Progress Over Time',
+                    fontSize: 25
+                },
+                legend: {
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        fontColor: '#000'
+                    }
+                },
+                layout: {
+                    padding: {
+                        left: 50,
+                        right: 0,
+                        bottom: 0,
+                        top: 0
+                    }
+                },
+                tooltips: {
+                    enabled: true
+                }
+            }
+        });
+
+        let myChart2 = document.getElementById('myChart2').getContext('2d');
+
+
+        let massPopChart2 = new Chart(myChart2, {
+            type: 'pie', // bar, horizontalBar, pie, line, doughnut, radar, polarArea
+            data: {
+                labels: ['Infected', 'Cured', 'Death'],
+                datasets: [{
+                    label: 'Population',
+                    data: [
+                        2048,
+                        250,
+                        100
+                    ],
+                    //backgroundColor:'green',
+                    backgroundColor: [
+                        'rgba(255, 206, 31, 1)',
+                        'rgba(255, 5, 5, 1)',
+                        'rgba(0, 255, 55, 1)'
+                    ],
+                    borderWidth: 1,
+                    borderColor: '#777',
+                    hoverBorderWidth: 3,
+                    hoverBorderColor: '#000'
+                }]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: 'Current Stat',
+                    fontSize: 25
+                },
+                legend: {
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        fontColor: '#000'
+                    }
+                },
+                layout: {
+                    padding: {
+                        left: 50,
+                        right: 0,
+                        bottom: 0,
+                        top: 0
+                    }
+                },
+                tooltips: {
+                    enabled: true
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>
